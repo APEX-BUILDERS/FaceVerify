@@ -1,51 +1,131 @@
-<<<<<<< HEAD
-# FaceVerify
-=======
 # FaceVerify
 
-FaceVerify is a local FastAPI backend that scans an uploaded face image, performs a real Google Lens reverse-image search through SerpApi, and stores the discovered match in a verifiable local blockchain. It is built for hackathon demos where the whole pipeline can run in one local server process, with only the reverse-search step requiring internet access.
+FaceVerify is a FastAPI-based project that scans an uploaded face image, performs reverse image lookup with Google Lens (via SerpApi), and stores the resulting match in a locally verifiable SHA-256 blockchain.
 
-## Run
+It includes both:
+- a backend API for the full face→search→chain workflow, and
+- a lightweight web UI served from the same app.
 
+## Features
+
+- Face scan endpoint using DeepFace embeddings
+- Reverse image lookup via SerpApi Google Lens
+- Match persistence in SQLite
+- Local blockchain with:
+  - genesis block creation
+  - append-only commits for search results
+  - single-block and full-chain verification
+- End-to-end pipeline endpoint (`scan -> search -> chain commit`)
+- Browser UI for upload, pipeline execution, and chain inspection
+
+## Tech Stack
+
+- **Backend:** FastAPI, Uvicorn
+- **AI / Vision:** DeepFace, OpenCV, NumPy, tf-keras
+- **Storage:** SQLite
+- **Search Integration:** SerpApi (`google-search-results`)
+- **Config:** pydantic-settings, python-dotenv
+- **Frontend:** HTML, CSS, vanilla JavaScript
+
+## Installation
+
+### 1) Clone and enter the project
+
+```bash
+git clone https://github.com/APEX-BUILDERS/FaceVerify.git
+cd FaceVerify
+```
+
+### 2) Create a virtual environment
+
+**Linux/macOS**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows (PowerShell)**
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-copy .env.example .env
-# edit .env and set SERPAPI_API_KEY
-uvicorn app.main:app --reload
 ```
 
-Linux/macOS:
+### 3) Install dependencies
 
 ```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-# edit .env and set SERPAPI_API_KEY
+```
+
+## Configuration
+
+Create a `.env` file in the repository root:
+
+```env
+SERPAPI_API_KEY=your_serpapi_key
+APP_BASE_URL=http://localhost:8000
+```
+
+Notes:
+- `SERPAPI_API_KEY` is required for reverse image search.
+- `APP_BASE_URL` defaults to `http://localhost:8000` if omitted.
+- When running locally on localhost, the app uploads images to a temporary public host so SerpApi can access them.
+
+## Usage
+
+Start the server:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-## Blockchain
+Then open:
+- **Web UI:** `http://localhost:8000/`
+- **API docs:** `http://localhost:8000/docs`
 
-FaceVerify uses a local, self-hosted, SHA-256-linked block chain (not a public network) — chosen for offline reliability during the hackathon window; swapping in a public testnet via web3.py is a documented future step, not required by the task.
+### Example API calls
 
-## Known Limitations
-
-- SerpApi free tier call limit is 100 searches/month.
-- Reverse-search quality depends on the input photo and whether matching public posts exist.
-- DeepFace first run downloads model weights and needs internet once.
-
-## Demo Curl
+Run full pipeline:
 
 ```bash
 curl -X POST "http://localhost:8000/api/pipeline/run" -F "image=@/path/to/face.jpg"
 ```
 
-Check the chain:
+Read full chain:
 
 ```bash
 curl "http://localhost:8000/api/chain/full"
 ```
->>>>>>> master
+
+## Project Structure
+
+```text
+FaceVerify/
+├── app/
+│   ├── main.py                # FastAPI app + router registration + static mounts
+│   ├── config.py              # settings, storage and DB paths
+│   ├── db.py                  # SQLite initialization and connection helper
+│   ├── routers/               # API routes (face, search, chain, pipeline)
+│   ├── services/              # business logic for face scan, search, blockchain
+│   └── storage/               # runtime-created DB and uploaded faces
+├── web/                       # static frontend served by FastAPI
+├── requirements.txt
+└── README.md
+```
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a feature branch
+3. Make focused changes
+4. Open a pull request with a clear description
+
+## License
+
+No license file is currently included in this repository.
+If you plan to open-source this project broadly, add a license (for example, MIT) in a `LICENSE` file.
+
+## Contact / Support
+
+- Open an issue in this repository for bugs, ideas, or support requests.
