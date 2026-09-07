@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+app/storage/faceverify.sqlite3
+app/storage/faces/*.jpg
+!app/storage/faces/.gitkeep

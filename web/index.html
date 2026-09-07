@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FaceVerify // HH Goa 2026</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>FACEVERIFY // HH GOA 2026 · TASK 3</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="glow"></div>
+        <h1>Face ID + Blockchain Verification</h1>
+        <p>Scan a face, find a public social match, and anchor the discovery to a local SHA-256 chain.</p>
+      </section>
+
+      <section class="upload-card">
+        <label class="dropzone" id="dropzone">
+          <input id="imageInput" type="file" accept="image/*">
+          <img id="preview" alt="">
+          <span id="dropText">Drop one face image or click to select</span>
+        </label>
+        <button id="runButton" class="primary" disabled>Run Pipeline</button>
+      </section>
+
+      <section class="tracker" aria-label="Pipeline stages">
+        <div class="step" data-step="face">
+          <span class="dot"></span>
+          <div>
+            <strong>Genesis</strong>
+            <span>face scan</span>
+            <code>pending</code>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="step" data-step="search">
+          <span class="dot"></span>
+          <div>
+            <strong>Build</strong>
+            <span>social match</span>
+            <code>pending</code>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="step" data-step="chain">
+          <span class="dot"></span>
+          <div>
+            <strong>Launch</strong>
+            <span>chain commit</span>
+            <code>pending</code>
+          </div>
+        </div>
+      </section>
+
+      <section class="results">
+        <article class="result-card hidden" id="messageCard">
+          <h2>Status</h2>
+          <p id="messageText"></p>
+        </article>
+
+        <article class="result-card hidden" id="faceCard">
+          <h2>Face</h2>
+          <dl>
+            <div><dt>face_id</dt><dd id="faceId"></dd></div>
+            <div><dt>embedding_len</dt><dd id="embeddingLen"></dd></div>
+          </dl>
+        </article>
+
+        <article class="result-card hidden" id="matchCard">
+          <h2>Match Found</h2>
+          <div id="matchError" class="inline-error hidden"></div>
+          <div id="matchContent" class="match-grid hidden">
+            <img id="matchThumb" alt="">
+            <dl>
+              <div><dt>matched_url</dt><dd><a id="matchedUrl" href="#" target="_blank" rel="noreferrer"></a></dd></div>
+              <div><dt>source_domain</dt><dd id="sourceDomain"></dd></div>
+              <div><dt>title</dt><dd id="matchTitle"></dd></div>
+            </dl>
+          </div>
+        </article>
+
+        <article class="result-card hidden" id="blockCard">
+          <div class="card-title-row">
+            <h2>Blockchain Record</h2>
+            <button id="verifyButton" class="secondary">Verify On Chain</button>
+          </div>
+          <pre id="blockData"></pre>
+          <span id="verifyBadge" class="badge hidden"></span>
+        </article>
+
+        <article class="result-card chain-card">
+          <button id="chainToggle" class="accordion" aria-expanded="false">View Full Chain</button>
+          <div id="chainPanel" class="chain-panel hidden"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <span>LOCAL SHA-256 CHAIN · DEEPFACE · SERPAPI</span>
+      <span>© 2026 — built for HH Goa 2026</span>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
