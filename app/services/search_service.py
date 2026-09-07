@@ -2,6 +2,10 @@ import uuid
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
+# Added requests and Path to support uploading local images to a public host for SerpApi.
+from pathlib import Path
+import requests
+
 from app.config import get_settings
 from app.db import get_connection
 from app.services.face_service import get_face
@@ -19,6 +23,33 @@ SOCIAL_DOMAINS = (
 
 class SearchServiceError(Exception):
     pass
+
+
+# SerpApi cannot access localhost URLs, so local face images must be hosted publicly before querying Google Lens.
+def _upload_to_public_host(image_path: Path) -> str:
+    try:
+        with image_path.open("rb") as f:
+            res = requests.post("https://uguu.se/upload", files={"files[]": f}, timeout=15)
+            if res.status_code == 200 and res.json().get("success"):
+                return res.json()["files"][0]["url"]
+    except Exception:
+        pass
+    try:
+        import base64
+
+        data = base64.b64encode(image_path.read_bytes()).decode("utf-8")
+        res = requests.post(
+            "https://freeimage.host/api/1/upload",
+            data={"key": "6d207e02198a847aa98d0a2a901485a5", "action": "upload", "source": data, "format": "json"},
+            timeout=15,
+        )
+        if res.status_code == 200:
+            url = res.json().get("image", {}).get("url")
+            if url:
+                return url
+    except Exception:
+        pass
+    raise SearchServiceError("Failed to upload image to public host for SerpApi")
 
 
 def _domain(url: str) -> str:
@@ -49,7 +80,12 @@ def run_reverse_image_search(face_id: str) -> dict:
     if face is None:
         raise SearchServiceError("Face not found")
 
-    image_url = f"{settings.app_base_url.rstrip('/')}/storage/faces/{face_id}.jpg"
+    saved_path = Path(face["saved_path"])
+    # Passing a local/localhost URL to SerpApi fails because external Google Lens servers cannot reach it.
+    if "localhost" in settings.app_base_url or "127.0.0.1" in settings.app_base_url:
+        image_url = _upload_to_public_host(saved_path)
+    else:
+        image_url = f"{settings.app_base_url.rstrip('/')}/storage/faces/{face_id}.jpg"
 
     try:
         from serpapi import GoogleSearch
@@ -64,6 +100,10 @@ def run_reverse_image_search(face_id: str) -> dict:
         results = search.get_dict()
     except Exception as exc:
         raise SearchServiceError(f"SerpApi request failed: {exc}") from exc
+
+    # SerpApi error/rate-limit responses were silently swallowed and misreported as no usable matches.
+    if "error" in results:
+        raise SearchServiceError(f"SerpApi error: {results['error']}")
 
     match = _pick_match(results)
     if match is None:
