@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-multipart
+deepface
+tf-keras
+google-search-results
+pydantic-settings
+python-dotenv
